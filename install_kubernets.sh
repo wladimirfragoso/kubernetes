@@ -57,9 +57,9 @@ print_status "Instalando dependências..."
 sudo apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates
 
 # Habilitar repositório Docker
-print_status "Habilitando repositório Docker"
+print_status "Habilitando repositório Docker para Ubuntu 22.04"
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable"
 
 # Atualizar a lista de pacotes e instalar containerd
 print_status "Atualizando lista de pacotes e instalando containerd"
@@ -77,7 +77,7 @@ sudo systemctl restart containerd
 sudo systemctl enable containerd
 
 # Etapa 5: Adicionar repositório Apt para Kubernetes
-print_status "Adicionando repositório Kubernetes"
+print_status "Adicionando repositório Kubernetes para Ubuntu 22.04"
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
