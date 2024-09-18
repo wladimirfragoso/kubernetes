@@ -13,8 +13,20 @@ fi
 
 # Step 1: Atualizar o sistema sem interação
 print_status "Atualizando o sistema..."
+
+# Configurar para não haver interação e aceitar reiniciar serviços automaticamente
 export DEBIAN_FRONTEND=noninteractive
-sudo apt update && sudo apt upgrade -y
+
+# Configurar opções do dpkg para evitar prompts interativos
+sudo apt-get -y install debconf-utils
+sudo debconf-set-selections <<< "libc6 libraries/restart-without-asking boolean true"
+sudo debconf-set-selections <<< "postfix postfix/main_mailer_type select No configuration"
+
+# Executar atualização com parâmetros para reinicializar serviços automaticamente
+sudo apt-get -o Dpkg::Options::="--force-confnew" \
+             -o Dpkg::Options::="--force-confdef" \
+             --allow-downgrades --allow-remove-essential --allow-change-held-packages \
+             update && sudo apt-get upgrade -yq
 
 # Step 2: Desabilitar o swap e definir parâmetros essenciais do kernel 
 print_status "Desabilitando o Swap"
