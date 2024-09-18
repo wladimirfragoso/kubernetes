@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Script de instalação do Docker, kubeadm, kubelet e kubectl
+# Para uso em sistemas baseados em Ubuntu/Debian
+# Script deve rodar ate o Step 6 em (all nodes)
+# Como executar diretamente no seu prompt de comando: sudo curl https://raw.githubusercontent.com/wladimirfragoso/kubernetes/refs/heads/main/install_kubernets.sh | sh
+
 # Função para exibir mensagens de status
 print_status() {
     echo ">>> $1"
@@ -15,18 +20,20 @@ fi
 print_status "Atualizando o sistema..."
 
 # Configurar para não haver interação e aceitar reiniciar serviços automaticamente
-export DEBIAN_FRONTEND=noninteractive
+sudo export DEBIAN_FRONTEND=noninteractive
 
 # Configurar opções do dpkg para evitar prompts interativos
-sudo apt-get -y install debconf-utils
-sudo debconf-set-selections <<< "libc6 libraries/restart-without-asking boolean true"
-sudo debconf-set-selections <<< "postfix postfix/main_mailer_type select No configuration"
+sudo apt -y install debconf-utils
+echo "libc6 libraries/restart-without-asking boolean true" | sudo debconf-set-selections
+echo "postfix postfix/main_mailer_type select No configuration" | sudo debconf-set-selections
+
+# Atualizar a lista de pacotes
+sudo apt-get update
 
 # Executar atualização com parâmetros para reinicializar serviços automaticamente
-sudo apt-get -o Dpkg::Options::="--force-confnew" \
-             -o Dpkg::Options::="--force-confdef" \
-             --allow-downgrades --allow-remove-essential --allow-change-held-packages \
-             update && sudo apt-get upgrade -yq
+DEBIAN_FRONTEND=noninteractive sudo apt-get upgrade -yq \
+    -o Dpkg::Options::="--force-confnew" \
+    -o Dpkg::Options::="--force-confdef"
 
 # Step 2: Desabilitar o swap e definir parâmetros essenciais do kernel 
 print_status "Desabilitando o Swap"
@@ -59,7 +66,7 @@ sudo apt install -y curl gnupg2 software-properties-common apt-transport-https c
 # Habilitar repositório Docker
 print_status "Habilitando repositório Docker para Ubuntu 22.04"
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable"
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 
 # Atualizar a lista de pacotes e instalar containerd
 print_status "Atualizando lista de pacotes e instalando containerd"
@@ -69,7 +76,7 @@ sudo apt install -y containerd.io
 # Configurar containerd para usar systemd como cgroup
 print_status "Configurando containerd para usar systemd como cgroup"
 containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
-sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
 
 # Reiniciar e habilitar o serviço containerd
 print_status "Reiniciando e habilitando containerd"
