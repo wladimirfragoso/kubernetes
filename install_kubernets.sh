@@ -86,3 +86,7 @@ sudo apt update
 print_status "Instalando kubeadm, kubelet e kubectl"
 sudo apt install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
+
+# Habilitando o serviço do kubelet
+# Por fim, vamos habilitar o serviço do kubelet para que ele inicie automaticamente com o sistema:
+sudo systemctl enable --now kubelet
